@@ -1,0 +1,42 @@
+body.faq-page {
+  background-color: #f8f9fa;
+}
+
+.faq-header {
+  background-color: #0a142a;
+  color: white;
+  padding: 30px 0;
+}
+
+.faq-section {
+  padding: 50px 0;
+}
+
+.faq-item {
+  margin-bottom: 30px;
+}
+
+.faq-page .accordion-button {
+  background-color: #0a142a;
+  color: #fff;
+}
+
+.faq-page .accordion-button:focus,
+.faq-page .accordion-button:not(.collapsed) {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.faq-page .accordion-button:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.faq-page .accordion-body {
+  background-color: #f1f1f1;
+}
+
+.faq-page .line {
+  height: 3px;
+  background-color: gray;
+}

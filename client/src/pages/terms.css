@@ -1,0 +1,36 @@
+.terms-page {
+  background-color: #f8f9fa;
+}
+
+.terms-header {
+  background-color: #0a142a;
+  color: white;
+  padding: 40px 0 1px;
+  text-align: center;
+}
+
+.terms-section {
+  padding: 50px 0;
+  background-color: #0a142a;
+}
+
+.terms-content {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.terms-content h2 {
+  margin-top: 20px;
+}
+
+.terms-content p,
+.terms-content li {
+  line-height: 1.6;
+}
+
+.terms-page .line {
+  background-color: gray;
+  height: 3px;
+}

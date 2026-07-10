@@ -1,0 +1,43 @@
+.refund-page {
+  background-color: #0a142a;
+  color: #f0f2f5;
+  font-family: Arial, sans-serif;
+  padding-top: 20px;
+  min-height: 100vh;
+}
+
+.refund-page .container-fluid {
+  background-color: #1a233a;
+  padding: 30px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.refund-page h1 {
+  font-size: 3em;
+  color: #17a2b8;
+  margin-bottom: 20px;
+}
+
+.refund-page h3 {
+  font-size: 1.5em;
+  margin-bottom: 30px;
+}
+
+.refund-page ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.refund-page ul li {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.refund-page ul .list::before {
+  content: '\2022';
+  color: #17a2b8;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}

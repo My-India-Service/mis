@@ -1,0 +1,30 @@
+.home-button {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 1em;
+  z-index: 10;
+}
+
+.home-button:hover {
+  background-color: #0d6e80;
+  color: white;
+}
+
+@media (max-width: 576px) {
+  .home-button {
+    font-size: 0.9em;
+    padding: 8px 8px;
+    top: 20px;
+    left: 10px;
+  }
+}
