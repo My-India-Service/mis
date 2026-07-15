@@ -49,4 +49,17 @@ export const api = {
   getSubmissions: (query = '') => request(`/contact${query}`),
 
   deleteSubmission: (id) => request(`/contact/${id}`, { method: 'DELETE' }),
+
+  getSuccessStories: (admin = false) => request(`/success-stories${admin ? '?admin=true' : ''}`),
+
+  previewSuccessStory: (url) =>
+    request('/success-stories/preview', { method: 'POST', body: JSON.stringify({ url }) }),
+
+  createSuccessStory: (payload) =>
+    request('/success-stories', { method: 'POST', body: JSON.stringify(payload) }),
+
+  updateSuccessStory: (id, payload) =>
+    request(`/success-stories/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+
+  deleteSuccessStory: (id) => request(`/success-stories/${id}`, { method: 'DELETE' }),
 };

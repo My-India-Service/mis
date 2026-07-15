@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import Marquee from '../components/Marquee';
 import BlogsSection from '../components/BlogsSection';
 import EventsSection from '../components/EventsSection';
+import SuccessStoriesCarousel from '../components/SuccessStoriesCarousel';
 
 const BRANDS = [
   'flipkart-24F.png',
@@ -187,112 +188,7 @@ function Home() {
         </div>
       </section>
 
-      <div
-        id="carouselExampleIndicators"
-        className="carousel slide success-carousel"
-        data-bs-ride="carousel"
-      >
-        <div className="carousel-indicators">
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        </div>
-        <div className="clients-quote">
-          <h1>Our clients&apos; success stories</h1>
-        </div>
-        <div className="carousel-inner">
-          <div className="carousel-item active">
-            <div className="row">
-              <div className="col-md-4">
-                <img src="/images/besteggs.webp" className="d-block w-100 rounded-2 transform" alt="Best Eggs" />
-              </div>
-              <div className="col-md-3"></div>
-              <div className="col-md-5 p-5">
-                <div className="logo">
-                  <img src="/images/Best egg-5_1.webp" alt="Best Egg" />
-                </div>
-                <h4 className="ppc-title">Democratizing Digital PCR Testing</h4>
-                <p>
-                  <b className="glossy-blue">Challenge:</b> Requirement of end-to-end accurate, seamless, and rapid dPCR
-                  testing solution for health monitoring and the identification of SARS-CoV-2 patients.
-                </p>
-                <p>
-                  solution:: In partnership with myindiaservice, TFS designed and built the application from scratch. It
-                  seamlessly integrates with its hardware instruments, automatically processes data for SARS-CoV-2
-                  patients, and enables automated, precise monitoring.
-                </p>
-                <p>
-                  Benefits: Reduced dPCR testing for Covid +ve patients from hours to minutes. With added functionalities,
-                  the platform could track community spread as well.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="carousel-item">
-            <div className="row">
-              <div className="col-md-4">
-                <img src="/images/laboratory-equipment_0.webp" className="d-block w-100 h-70 rounded-2 transform" alt="Lab" />
-              </div>
-              <div className="col-md-3"></div>
-              <div className="col-md-5 p-5">
-                <div className="logo">
-                  <img src="/images/Thermo Fisher Scientific_0.webp" alt="Thermo Fisher" />
-                </div>
-                <h4 className="ppc-title">Disrupting the Digital Lending Space</h4>
-                <p>
-                  <b className="glossy-blue">Challenge</b>: Build a revolutionary new platform that suits their business
-                  growth needs; be able to execute and test new business propositions and offerings.
-                </p>
-                <p>
-                  <b className="glossy-blue">Solution</b>: myindiaservice developed customer-facing features and internal
-                  business tools, adding new features to the core product. Our work involved developing analytics
-                  capabilities, improving customer support, and supporting a multivariate testing program to enhance the
-                  customer experience.
-                </p>
-                <p>
-                  <b className="glossy-blue">Benefits</b>: Provided loans to over 600,000 qualified applicants. With a
-                  Trustpilot rating of 4.8/5, over $10 billion worth of loans were transacted.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="carousel-item">
-            <div className="row">
-              <div className="col-md-4">
-                <img src="/images/Zee51.webp" className="d-block w-100 h-70 ml-sm-0 rounded-2 transform" alt="Zee5" />
-              </div>
-              <div className="col-md-3"></div>
-              <div className="col-md-5 p-5">
-                <div className="logo">
-                  <img src="/images/new-zee5.webp" alt="Zee5" style={{ width: '15% !important' }} />
-                </div>
-                <h4 className="ppc-title">Enabling Cloud-Native Content Operations</h4>
-                <p>
-                  <b className="glossy-blue">Challenge</b>: A content management system (CMS) that&apos;s manual, slow,
-                  scattered, and hard to scale.
-                </p>
-                <p>
-                  <b className="glossy-blue">Solution</b>: Built a fast, flexible, integrated, and Cloud-native video CMS
-                  with user-friendly functionalities that helped our client&apos;s organization to be smarter and thus highly
-                  competitive.
-                </p>
-                <p>
-                  <b className="glossy-blue">Benefits</b>: Automated, integrated content processes; improved business
-                  scalability to cater to global needs and adapt to disruptions faster.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span className="visually-hidden">Previous</span>
-        </button>
-        <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span className="carousel-control-next-icon" aria-hidden="true"></span>
-          <span className="visually-hidden">Next</span>
-        </button>
-      </div>
+      <SuccessStoriesCarousel />
 
       <section className="ppc2-cta-banner bg-white">
         <div className="container">

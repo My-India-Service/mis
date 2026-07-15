@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import BlogManager from './BlogManager';
 import EventManager from './EventManager';
 import SubmissionsManager from './SubmissionsManager';
+import SuccessStoryManager from './SuccessStoryManager';
 import './admin.css';
 
 function AdminDashboard() {
@@ -36,6 +37,13 @@ function AdminDashboard() {
           >
             <i className="fas fa-inbox me-2"></i> Form Submissions
           </button>
+          <button
+            type="button"
+            className={`admin-nav-item ${tab === 'stories' ? 'active' : ''}`}
+            onClick={() => setTab('stories')}
+          >
+            <i className="fas fa-trophy me-2"></i> Success Stories
+          </button>
           <Link to="/" className="admin-nav-item" style={{ textDecoration: 'none' }}>
             <i className="fas fa-globe me-2"></i> View Website
           </Link>
@@ -50,6 +58,7 @@ function AdminDashboard() {
           {tab === 'blogs' && <BlogManager />}
           {tab === 'events' && <EventManager />}
           {tab === 'submissions' && <SubmissionsManager />}
+          {tab === 'stories' && <SuccessStoryManager />}
         </main>
       </div>
     </div>

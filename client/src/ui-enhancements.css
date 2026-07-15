@@ -490,6 +490,51 @@ form button.btn-primary:hover,
   color: var(--accent-blue);
 }
 
+.story-image-link {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.story-preview-clickable {
+  transition: transform 0.3s, filter 0.3s;
+  cursor: pointer;
+}
+
+.story-image-link:hover .story-preview-clickable {
+  transform: scale(1.03);
+  filter: brightness(0.9);
+}
+
+.story-visit-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(10, 20, 42, 0.85);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.story-image-link:hover .story-visit-badge {
+  opacity: 1;
+}
+
+.story-placeholder {
+  height: 280px;
+  background: #e8edfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
 /* ===== CTA Banner ===== */
 .bg-irys {
   background: var(--gradient-cta) !important;
