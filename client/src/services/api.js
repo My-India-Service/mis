@@ -62,4 +62,23 @@ export const api = {
     request(`/success-stories/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
 
   deleteSuccessStory: (id) => request(`/success-stories/${id}`, { method: 'DELETE' }),
+
+  uploadSuccessStoryImage: async (file) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch(`${API_BASE}/upload/success-story-image`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Upload failed');
+    }
+
+    return data;
+  },
 };

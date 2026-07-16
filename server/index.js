@@ -10,6 +10,7 @@ const blogRoutes = require('./routes/blogRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const successStoryRoutes = require('./routes/successStoryRoutes');
 const imageProxyRoutes = require('./routes/imageProxyRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 const seedSuccessStories = require('./utils/seedSuccessStories');
 
 const app = express();
@@ -30,6 +31,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'My India Service API is running' });
@@ -41,6 +43,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/success-stories', successStoryRoutes);
 app.use('/api/image-proxy', imageProxyRoutes);
+app.use('/api/upload', uploadRoutes);
 
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));

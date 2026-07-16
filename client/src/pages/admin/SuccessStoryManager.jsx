@@ -14,6 +14,12 @@ const emptyStory = {
   order: 0,
 };
 
+function getImageMode(previewImage) {
+  if (!previewImage) return 'fetch';
+  if (previewImage.startsWith('/uploads/')) return 'upload';
+  return 'fetch';
+}
+
 function SuccessStoryManager() {
   const [stories, setStories] = useState([]);
   const [form, setForm] = useState(emptyStory);
@@ -21,6 +27,8 @@ function SuccessStoryManager() {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [imageMode, setImageMode] = useState('fetch');
 
   const loadStories = async () => {
     setLoading(true);
@@ -64,6 +72,32 @@ function SuccessStoryManager() {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPG, PNG, WebP, etc.)');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadLoading(true);
+    try {
+      const res = await api.uploadSuccessStoryImage(file);
+      setForm((prev) => ({
+        ...prev,
+        previewImage: res.data.url,
+        _fallbacks: [],
+      }));
+    } catch (err) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setUploadLoading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleEdit = (story) => {
     setForm({
       title: story.title,
@@ -76,6 +110,7 @@ function SuccessStoryManager() {
       published: story.published,
       order: story.order,
     });
+    setImageMode(getImageMode(story.previewImage));
     setEditingId(story._id);
     setShowForm(true);
   };
@@ -95,6 +130,7 @@ function SuccessStoryManager() {
       await api.createSuccessStory(payload);
     }
     setForm(emptyStory);
+    setImageMode('fetch');
     setEditingId(null);
     setShowForm(false);
     loadStories();
@@ -102,23 +138,23 @@ function SuccessStoryManager() {
 
   const handleCancel = () => {
     setForm(emptyStory);
+    setImageMode('fetch');
     setEditingId(null);
     setShowForm(false);
+  };
+
+  const openNewForm = () => {
+    setShowForm(true);
+    setEditingId(null);
+    setForm(emptyStory);
+    setImageMode('fetch');
   };
 
   return (
     <div>
       <div className="admin-header">
         <h1>Success Stories</h1>
-        <button
-          type="button"
-          className="admin-btn admin-btn-primary"
-          onClick={() => {
-            setShowForm(true);
-            setEditingId(null);
-            setForm(emptyStory);
-          }}
-        >
+        <button type="button" className="admin-btn admin-btn-primary" onClick={openNewForm}>
           + Add Story
         </button>
       </div>
@@ -132,32 +168,76 @@ function SuccessStoryManager() {
               <input name="title" value={form.title} onChange={handleChange} required />
             </div>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Website URL (click opens this link)</label>
-                <input
-                  name="websiteUrl"
-                  value={form.websiteUrl}
-                  onChange={handleChange}
-                  placeholder="https://example.com"
-                />
-              </div>
-              <div className="admin-form-group d-flex align-items-end">
+            <div className="admin-form-group">
+              <label>Preview Image</label>
+              <div className="image-mode-toggle">
                 <button
                   type="button"
-                  className="admin-btn admin-btn-secondary"
-                  onClick={handleFetchPreview}
-                  disabled={previewLoading}
+                  className={`image-mode-btn ${imageMode === 'fetch' ? 'active' : ''}`}
+                  onClick={() => setImageMode('fetch')}
                 >
-                  {previewLoading ? 'Fetching...' : 'Fetch Preview Image'}
+                  Fetch from URL
+                </button>
+                <button
+                  type="button"
+                  className={`image-mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
+                  onClick={() => setImageMode('upload')}
+                >
+                  Upload Image
                 </button>
               </div>
-            </div>
 
-            {form.previewImage && (
-              <div className="admin-form-group">
-                <label>Preview Image</label>
-                <div className="preview-image-wrap">
+              {imageMode === 'fetch' ? (
+                <>
+                  <div className="admin-form-row mt-2">
+                    <div className="admin-form-group">
+                      <label>Website URL (click opens this link)</label>
+                      <input
+                        name="websiteUrl"
+                        value={form.websiteUrl}
+                        onChange={handleChange}
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                    <div className="admin-form-group d-flex align-items-end">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        onClick={handleFetchPreview}
+                        disabled={previewLoading}
+                      >
+                        {previewLoading ? 'Fetching...' : 'Fetch Preview Image'}
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    name="previewImage"
+                    value={form.previewImage}
+                    onChange={handleChange}
+                    placeholder="Or paste image URL manually"
+                    className="mt-2"
+                  />
+                  <small className="text-muted d-block mt-1">
+                    WordPress sites ke liye pehle og:image / featured image try hota hai, warna screenshot.
+                  </small>
+                </>
+              ) : (
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploadLoading}
+                  />
+                  <small className="text-muted d-block mt-1">
+                    JPG, PNG, WebP — max 5MB. Image server par save hogi aur database mein URL store hoga.
+                  </small>
+                  {uploadLoading && <p className="text-muted mt-1 mb-0">Uploading...</p>}
+                </div>
+              )}
+
+              {form.previewImage ? (
+                <div className="preview-image-wrap mt-3">
                   <img
                     src={getDisplayImage(form.previewImage)}
                     alt="Preview"
@@ -174,18 +254,10 @@ function SuccessStoryManager() {
                     }}
                   />
                 </div>
-                <input
-                  name="previewImage"
-                  value={form.previewImage}
-                  onChange={handleChange}
-                  placeholder="Or paste image URL manually"
-                  className="mt-2"
-                />
-                <small className="text-muted">
-                  WordPress sites ke liye pehle og:image / featured image try hota hai, warna screenshot.
-                </small>
-              </div>
-            )}
+              ) : (
+                <p className="text-muted mt-2 mb-0">No preview image yet.</p>
+              )}
+            </div>
 
             <div className="admin-form-group">
               <label>Logo Image URL (optional)</label>
