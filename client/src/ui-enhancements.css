@@ -61,7 +61,6 @@ body {
 .navbar-brand img {
   height: 42px;
   width: auto;
-  filter: brightness(0) invert(1);
 }
 
 .navbar-links {
@@ -660,7 +659,6 @@ form button.btn-primary:hover,
 
 .footer-brand img {
   height: 40px;
-  filter: brightness(0) invert(1);
   margin-bottom: 16px;
 }
 

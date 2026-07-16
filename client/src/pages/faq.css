@@ -1,42 +1,81 @@
-body.faq-page {
-  background-color: #f8f9fa;
-}
-
-.faq-header {
-  background-color: #0a142a;
-  color: white;
-  padding: 30px 0;
-}
-
-.faq-section {
-  padding: 50px 0;
+.faq-accordion {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .faq-item {
-  margin-bottom: 30px;
+  background: #fff;
+  border: 1px solid rgba(10, 20, 42, 0.06) !important;
+  border-radius: 14px !important;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(10, 20, 42, 0.04);
 }
 
-.faq-page .accordion-button {
-  background-color: #0a142a;
+.faq-item .accordion-button {
+  background: #fff;
+  color: #0a142a;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 18px 22px;
+  box-shadow: none !important;
+  gap: 14px;
+}
+
+.faq-item .accordion-button:not(.collapsed) {
+  background: #fff;
+  color: #0a142a;
+}
+
+.faq-item .accordion-button:hover {
+  background: #f8fafc;
+  color: #0a142a;
+}
+
+.faq-item .accordion-button::after {
+  filter: none;
+  background-size: 16px;
+}
+
+.faq-q-num {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(63, 136, 110, 0.12);
+  color: #3f886e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.faq-item .accordion-button:not(.collapsed) .faq-q-num {
+  background: #3f886e;
   color: #fff;
 }
 
-.faq-page .accordion-button:focus,
-.faq-page .accordion-button:not(.collapsed) {
-  background-color: #0d6efd;
-  color: white;
+.faq-item .accordion-body {
+  background: #fff;
+  color: #6b7a90;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  padding: 0 22px 20px 72px;
 }
 
-.faq-page .accordion-button:hover {
-  background-color: #0056b3;
-  color: white;
+.faq-item .accordion-body a {
+  color: #3f886e;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.faq-page .accordion-body {
-  background-color: #f1f1f1;
+.faq-item .accordion-body a:hover {
+  text-decoration: underline;
 }
 
-.faq-page .line {
-  height: 3px;
-  background-color: gray;
+@media (max-width: 576px) {
+  .faq-item .accordion-body {
+    padding-left: 22px;
+  }
 }

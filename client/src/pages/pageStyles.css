@@ -3,7 +3,7 @@
   top: 50px;
   left: 50px;
   background-color: #17a2b8;
-  color: white;
+  color: white !important;
   border: none;
   padding: 10px 15px;
   border-radius: 5px;
@@ -13,11 +13,13 @@
   gap: 5px;
   font-size: 1em;
   z-index: 10;
+  text-decoration: none !important;
 }
 
 .home-button:hover {
   background-color: #0d6e80;
-  color: white;
+  color: white !important;
+  text-decoration: none !important;
 }
 
 @media (max-width: 576px) {

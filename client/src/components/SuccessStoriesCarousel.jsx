@@ -133,8 +133,8 @@ function SuccessStoriesCarousel() {
 
                   <div className="success-story-content">
                     {story.logoImage && (
-                      <div className="success-story-logo">
-                        <img src={getDisplayImage(story.logoImage)} alt="Client logo" />
+                      <div className="logo success-story-logo">
+                        <img src={story.logoImage} alt="Client logo" />
                       </div>
                     )}
 

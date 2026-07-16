@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
-import HomeButton from '../components/HomeButton';
+import Navbar from '../components/Navbar';
 import './faq.css';
-import './pageStyles.css';
+import './blogs-events.css';
 
 const FAQ_ITEMS = [
   {
@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     id: 'Five',
-    question: 'Can I update my website after it’s been launched?',
+    question: "Can I update my website after it's been launched?",
     answer:
       'Yes, all our websites come with an easy-to-use CMS (Content Management System) that allows you to make updates. We also offer ongoing support if you prefer us to handle the updates.',
   },
@@ -39,13 +39,13 @@ const FAQ_ITEMS = [
     id: 'Six',
     question: 'How much does a new website cost?',
     answer:
-      'The cost varies depending on the project’s complexity, features, and design requirements. We provide custom quotes after an initial consultation to understand your needs better.',
+      "The cost varies depending on the project's complexity, features, and design requirements. We provide custom quotes after an initial consultation to understand your needs better.",
   },
   {
     id: 'Seven',
     question: 'Do you offer payment plans?',
     answer:
-      'Yes, we offer flexible payment plans to make our services accessible. Typically, we require a deposit upfront, with the remaining balance spread over the project’s duration or upon completion.',
+      "Yes, we offer flexible payment plans to make our services accessible. Typically, we require a deposit upfront, with the remaining balance spread over the project's duration or upon completion.",
   },
   {
     id: 'Eight',
@@ -65,9 +65,7 @@ const FAQ_ITEMS = [
     answer: (
       <>
         You can contact us via our website&apos;s{' '}
-        <Link to="/contact" className="text-decoration-none">
-          contact form
-        </Link>
+        <Link to="/contact">contact form</Link>
         , email us at myindiaservice1@gmail.com, or call us at +91-9990708450.
       </>
     ),
@@ -76,37 +74,34 @@ const FAQ_ITEMS = [
 
 function FAQ() {
   return (
-    <>
-      <HomeButton />
-      <header className="faq-header text-center">
-        <div className="mb-5"></div>
+    <div className="blogs-events-page faq-page">
+      <Navbar />
+      <div className="be-hero">
         <h1>Frequently Asked Questions</h1>
-        <p>Your questions answered by MyIndiaService</p>
-        <div className="px-5 pt-2">
-          <hr className="line" />
-        </div>
-      </header>
+        <p>Your questions answered by My India Service</p>
+      </div>
 
-      <section className="faq-section" style={{ backgroundColor: '#0A142A' }}>
+      <section className="be-section">
         <div className="container">
-          <div className="accordion" id="faqAccordion">
-            {FAQ_ITEMS.map((item) => (
+          <div className="faq-accordion accordion" id="faqAccordion">
+            {FAQ_ITEMS.map((item, index) => (
               <div className="accordion-item faq-item" key={item.id}>
                 <h2 className="accordion-header" id={`heading${item.id}`}>
                   <button
-                    className="accordion-button collapsed"
+                    className={`accordion-button ${index !== 0 ? 'collapsed' : ''}`}
                     type="button"
                     data-bs-toggle="collapse"
                     data-bs-target={`#collapse${item.id}`}
-                    aria-expanded="false"
+                    aria-expanded={index === 0 ? 'true' : 'false'}
                     aria-controls={`collapse${item.id}`}
                   >
+                    <span className="faq-q-num">{String(index + 1).padStart(2, '0')}</span>
                     {item.question}
                   </button>
                 </h2>
                 <div
                   id={`collapse${item.id}`}
-                  className="accordion-collapse collapse"
+                  className={`accordion-collapse collapse ${index === 0 ? 'show' : ''}`}
                   aria-labelledby={`heading${item.id}`}
                   data-bs-parent="#faqAccordion"
                 >
@@ -116,13 +111,10 @@ function FAQ() {
             ))}
           </div>
         </div>
-        <div className="px-5 pt-2">
-          <hr className="line" />
-        </div>
       </section>
 
       <Footer />
-    </>
+    </div>
   );
 }
 

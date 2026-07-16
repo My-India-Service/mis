@@ -145,7 +145,7 @@ function Home() {
       <section className="client-brand">
         <div className="container">
           <div className="text-center mb-5">
-            <span className="section-label">Our Clients</span>
+            {/* <span className="section-label">Our Clients</span> */}
             <h2 className="section-heading">Trusted by businesses worldwide</h2>
           </div>
           <div className="row justify-content-center g-3">
