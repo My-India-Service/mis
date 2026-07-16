@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
+import { getDisplayImage, isUploadedImage } from '../../utils/imageUrl';
 
 const emptyBlog = { title: '', excerpt: '', content: '', image: '', author: 'My India Service', published: false };
+
+function getImageMode(image) {
+  if (!image) return 'url';
+  if (isUploadedImage(image)) return 'upload';
+  return 'url';
+}
 
 function BlogManager() {
   const [blogs, setBlogs] = useState([]);
@@ -10,6 +16,8 @@ function BlogManager() {
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [imageMode, setImageMode] = useState('url');
 
   const loadBlogs = async () => {
     setLoading(true);
@@ -30,6 +38,28 @@ function BlogManager() {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPG, PNG, WebP, etc.)');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadLoading(true);
+    try {
+      const res = await api.uploadImage(file, 'blogs');
+      setForm((prev) => ({ ...prev, image: res.data.url }));
+    } catch (err) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setUploadLoading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleEdit = (blog) => {
     setForm({
       title: blog.title,
@@ -39,6 +69,7 @@ function BlogManager() {
       author: blog.author,
       published: blog.published,
     });
+    setImageMode(getImageMode(blog.image));
     setEditingId(blog._id);
     setShowForm(true);
   };
@@ -57,6 +88,7 @@ function BlogManager() {
       await api.createBlog(form);
     }
     setForm(emptyBlog);
+    setImageMode('url');
     setEditingId(null);
     setShowForm(false);
     loadBlogs();
@@ -64,23 +96,23 @@ function BlogManager() {
 
   const handleCancel = () => {
     setForm(emptyBlog);
+    setImageMode('url');
     setEditingId(null);
     setShowForm(false);
+  };
+
+  const openNewForm = () => {
+    setShowForm(true);
+    setEditingId(null);
+    setForm(emptyBlog);
+    setImageMode('url');
   };
 
   return (
     <div>
       <div className="admin-header">
         <h1>Blogs</h1>
-        <button
-          type="button"
-          className="admin-btn admin-btn-primary"
-          onClick={() => {
-            setShowForm(true);
-            setEditingId(null);
-            setForm(emptyBlog);
-          }}
-        >
+        <button type="button" className="admin-btn admin-btn-primary" onClick={openNewForm}>
           + Add Blog
         </button>
       </div>
@@ -101,16 +133,54 @@ function BlogManager() {
               <label>Content *</label>
               <textarea name="content" value={form.content} onChange={handleChange} required rows={6} />
             </div>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Image URL</label>
-                <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
+
+            <div className="admin-form-group">
+              <label>Image</label>
+              <div className="image-mode-toggle">
+                <button
+                  type="button"
+                  className={`image-mode-btn ${imageMode === 'url' ? 'active' : ''}`}
+                  onClick={() => setImageMode('url')}
+                >
+                  Image URL
+                </button>
+                <button
+                  type="button"
+                  className={`image-mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
+                  onClick={() => setImageMode('upload')}
+                >
+                  Upload Image
+                </button>
               </div>
-              <div className="admin-form-group">
-                <label>Author</label>
-                <input name="author" value={form.author} onChange={handleChange} />
-              </div>
+
+              {imageMode === 'url' ? (
+                <input
+                  name="image"
+                  value={form.image}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  className="mt-2"
+                />
+              ) : (
+                <div className="mt-2">
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading} />
+                  <small className="text-muted d-block mt-1">JPG, PNG, WebP — max 5MB</small>
+                  {uploadLoading && <p className="text-muted mt-1 mb-0">Uploading...</p>}
+                </div>
+              )}
+
+              {form.image ? (
+                <div className="preview-image-wrap mt-3">
+                  <img src={getDisplayImage(form.image)} alt="Preview" className="story-preview-img" />
+                </div>
+              ) : null}
             </div>
+
+            <div className="admin-form-group">
+              <label>Author</label>
+              <input name="author" value={form.author} onChange={handleChange} />
+            </div>
+
             <label className="admin-checkbox">
               <input type="checkbox" name="published" checked={form.published} onChange={handleChange} />
               Publish on website
@@ -136,6 +206,7 @@ function BlogManager() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Preview</th>
                 <th>Title</th>
                 <th>Status</th>
                 <th>Date</th>
@@ -145,6 +216,13 @@ function BlogManager() {
             <tbody>
               {blogs.map((blog) => (
                 <tr key={blog._id}>
+                  <td>
+                    {blog.image ? (
+                      <img src={getDisplayImage(blog.image)} alt="" className="story-thumb" />
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td>{blog.title}</td>
                   <td>
                     <span className={`admin-badge ${blog.published ? 'admin-badge-published' : 'admin-badge-draft'}`}>

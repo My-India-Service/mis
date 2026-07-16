@@ -5,16 +5,31 @@ const getToken = () => localStorage.getItem('adminToken');
 const request = async (url, options = {}) => {
   const token = getToken();
   const headers = {
-    'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
+  // Only set JSON content-type when sending a body
+  if (options.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  const data = await res.json();
+
+  let data = null;
+  const text = await res.text();
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    const err = new Error(res.ok ? 'Invalid server response' : 'Request failed');
+    err.status = res.status;
+    throw err;
+  }
 
   if (!res.ok) {
-    throw new Error(data.message || 'Request failed');
+    const err = new Error(data.message || 'Request failed');
+    err.status = res.status;
+    throw err;
   }
 
   return data;
@@ -63,12 +78,12 @@ export const api = {
 
   deleteSuccessStory: (id) => request(`/success-stories/${id}`, { method: 'DELETE' }),
 
-  uploadSuccessStoryImage: async (file) => {
+  uploadImage: async (file, type = 'blogs') => {
     const token = getToken();
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await fetch(`${API_BASE}/upload/success-story-image`, {
+    const res = await fetch(`${API_BASE}/upload/${type}`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
@@ -81,4 +96,6 @@ export const api = {
 
     return data;
   },
+
+  uploadSuccessStoryImage: (file) => api.uploadImage(file, 'success-stories'),
 };

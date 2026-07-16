@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { getDisplayImage } from '../../utils/imageUrl';
+import { getDisplayImage, isUploadedImage } from '../../utils/imageUrl';
 
 const emptyStory = {
   title: '',
@@ -16,7 +16,7 @@ const emptyStory = {
 
 function getImageMode(previewImage) {
   if (!previewImage) return 'fetch';
-  if (previewImage.startsWith('/uploads/')) return 'upload';
+  if (isUploadedImage(previewImage)) return 'upload';
   return 'fetch';
 }
 

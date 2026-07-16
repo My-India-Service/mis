@@ -18,7 +18,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: admin._id, email: admin.email },
+      { id: admin._id.toString(), email: admin.email },
       process.env.JWT_SECRET || 'mis-secret-key',
       { expiresIn: '7d' }
     );
@@ -26,7 +26,7 @@ router.post('/login', async (req, res) => {
     res.json({
       success: true,
       token,
-      admin: { id: admin._id, email: admin.email, name: admin.name },
+      admin: { id: admin._id.toString(), email: admin.email, name: admin.name },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -34,9 +34,19 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', auth, async (req, res) => {
-  const admin = await Admin.findById(req.admin.id).select('-password');
-  if (!admin) return res.status(404).json({ success: false, message: 'Admin not found' });
-  res.json({ success: true, admin });
+  try {
+    const adminId = req.admin.id || req.admin._id;
+    const admin = await Admin.findById(adminId).select('-password');
+    if (!admin) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    res.json({
+      success: true,
+      admin: { id: admin._id, email: admin.email, name: admin.name },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 module.exports = router;

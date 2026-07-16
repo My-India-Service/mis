@@ -4,11 +4,21 @@ import { useAuth } from '../../context/AuthContext';
 import './admin.css';
 
 function AdminLogin() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (authLoading) {
+    return (
+      <div className="admin-login-wrap">
+        <div className="admin-login-card">
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/admin" replace />;

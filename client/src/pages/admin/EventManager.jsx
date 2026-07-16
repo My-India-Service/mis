@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../services/api';
+import { getDisplayImage, isUploadedImage } from '../../utils/imageUrl';
 
 const emptyEvent = {
   title: '',
@@ -10,12 +11,20 @@ const emptyEvent = {
   published: false,
 };
 
+function getImageMode(image) {
+  if (!image) return 'url';
+  if (isUploadedImage(image)) return 'upload';
+  return 'url';
+}
+
 function EventManager() {
   const [events, setEvents] = useState([]);
   const [form, setForm] = useState(emptyEvent);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [imageMode, setImageMode] = useState('url');
 
   const loadEvents = async () => {
     setLoading(true);
@@ -36,6 +45,28 @@ function EventManager() {
     setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPG, PNG, WebP, etc.)');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadLoading(true);
+    try {
+      const res = await api.uploadImage(file, 'events');
+      setForm((prev) => ({ ...prev, image: res.data.url }));
+    } catch (err) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setUploadLoading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleEdit = (event) => {
     setForm({
       title: event.title,
@@ -45,6 +76,7 @@ function EventManager() {
       location: event.location,
       published: event.published,
     });
+    setImageMode(getImageMode(event.image));
     setEditingId(event._id);
     setShowForm(true);
   };
@@ -63,6 +95,7 @@ function EventManager() {
       await api.createEvent(form);
     }
     setForm(emptyEvent);
+    setImageMode('url');
     setEditingId(null);
     setShowForm(false);
     loadEvents();
@@ -70,23 +103,23 @@ function EventManager() {
 
   const handleCancel = () => {
     setForm(emptyEvent);
+    setImageMode('url');
     setEditingId(null);
     setShowForm(false);
+  };
+
+  const openNewForm = () => {
+    setShowForm(true);
+    setEditingId(null);
+    setForm(emptyEvent);
+    setImageMode('url');
   };
 
   return (
     <div>
       <div className="admin-header">
         <h1>Events</h1>
-        <button
-          type="button"
-          className="admin-btn admin-btn-primary"
-          onClick={() => {
-            setShowForm(true);
-            setEditingId(null);
-            setForm(emptyEvent);
-          }}
-        >
+        <button type="button" className="admin-btn admin-btn-primary" onClick={openNewForm}>
           + Add Event
         </button>
       </div>
@@ -113,10 +146,49 @@ function EventManager() {
                 <input name="location" value={form.location} onChange={handleChange} placeholder="Delhi, India" />
               </div>
             </div>
+
             <div className="admin-form-group">
-              <label>Image URL</label>
-              <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
+              <label>Image</label>
+              <div className="image-mode-toggle">
+                <button
+                  type="button"
+                  className={`image-mode-btn ${imageMode === 'url' ? 'active' : ''}`}
+                  onClick={() => setImageMode('url')}
+                >
+                  Image URL
+                </button>
+                <button
+                  type="button"
+                  className={`image-mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
+                  onClick={() => setImageMode('upload')}
+                >
+                  Upload Image
+                </button>
+              </div>
+
+              {imageMode === 'url' ? (
+                <input
+                  name="image"
+                  value={form.image}
+                  onChange={handleChange}
+                  placeholder="https://..."
+                  className="mt-2"
+                />
+              ) : (
+                <div className="mt-2">
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading} />
+                  <small className="text-muted d-block mt-1">JPG, PNG, WebP — max 5MB</small>
+                  {uploadLoading && <p className="text-muted mt-1 mb-0">Uploading...</p>}
+                </div>
+              )}
+
+              {form.image ? (
+                <div className="preview-image-wrap mt-3">
+                  <img src={getDisplayImage(form.image)} alt="Preview" className="story-preview-img" />
+                </div>
+              ) : null}
             </div>
+
             <label className="admin-checkbox">
               <input type="checkbox" name="published" checked={form.published} onChange={handleChange} />
               Publish on website
@@ -142,6 +214,7 @@ function EventManager() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Preview</th>
                 <th>Title</th>
                 <th>Date</th>
                 <th>Location</th>
@@ -152,6 +225,13 @@ function EventManager() {
             <tbody>
               {events.map((event) => (
                 <tr key={event._id}>
+                  <td>
+                    {event.image ? (
+                      <img src={getDisplayImage(event.image)} alt="" className="story-thumb" />
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td>{event.title}</td>
                   <td>{new Date(event.eventDate).toLocaleString()}</td>
                   <td>{event.location || '-'}</td>
