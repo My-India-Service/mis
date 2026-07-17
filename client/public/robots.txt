@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /book-call
+Disallow: /project-inquiry
+
+Sitemap: https://myindiaservice.com/sitemap.xml
