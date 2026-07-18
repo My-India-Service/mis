@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { plainTextFromMarkdown } from './MarkdownContent';
 import '../pages/blogs-events.css';
 
 function EventsSection() {
@@ -19,7 +20,7 @@ function EventsSection() {
     <section className="home-be-section alt">
       <div className="container">
         <div className="home-be-header">
-          <span className="section-label">What's On</span>
+          <span className="section-label">What&apos;s On</span>
           <h2>Upcoming Events</h2>
           <Link to="/events">View all events &rarr;</Link>
         </div>
@@ -39,7 +40,7 @@ function EventsSection() {
                   {new Date(event.eventDate).toLocaleDateString()}
                 </div>
                 <h3>{event.title}</h3>
-                <p>{event.description.slice(0, 100)}...</p>
+                <p>{plainTextFromMarkdown(event.description, 100)}</p>
                 {event.location && (
                   <div className="be-meta">
                     <i className="fas fa-map-marker-alt"></i> {event.location}

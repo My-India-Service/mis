@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Seo from '../components/Seo';
+import { plainTextFromMarkdown } from '../components/MarkdownContent';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
@@ -50,7 +51,7 @@ function Blogs() {
                   )}
                   <div className="be-card-body">
                     <h2>{blog.title}</h2>
-                    <p>{blog.excerpt || blog.content.slice(0, 120) + '...'}</p>
+                    <p>{blog.excerpt || plainTextFromMarkdown(blog.content, 120)}</p>
                     <div className="be-meta">
                       {blog.author} &middot; {new Date(blog.createdAt).toLocaleDateString()}
                     </div>

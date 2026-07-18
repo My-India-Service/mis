@@ -2,7 +2,19 @@ import { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { getDisplayImage, isUploadedImage } from '../../utils/imageUrl';
 
-const emptyBlog = { title: '', excerpt: '', content: '', image: '', author: 'My India Service', published: false };
+const emptyBlog = {
+  title: '',
+  excerpt: '',
+  content: '',
+  metaTitle: '',
+  metaDescription: '',
+  image: '',
+  author: 'My India Service',
+  published: false,
+};
+
+const MARKDOWN_HINT =
+  'Supports Markdown: blank lines for paragraphs, * or - for bullets, **bold**, [text](https://url). Paste from Gemini as Markdown.';
 
 function getImageMode(image) {
   if (!image) return 'url';
@@ -16,6 +28,7 @@ function BlogManager() {
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [imageMode, setImageMode] = useState('url');
 
@@ -63,8 +76,10 @@ function BlogManager() {
   const handleEdit = (blog) => {
     setForm({
       title: blog.title,
-      excerpt: blog.excerpt,
+      excerpt: blog.excerpt || '',
       content: blog.content,
+      metaTitle: blog.metaTitle || '',
+      metaDescription: blog.metaDescription || '',
       image: blog.image,
       author: blog.author,
       published: blog.published,
@@ -82,16 +97,23 @@ function BlogManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      await api.updateBlog(editingId, form);
-    } else {
-      await api.createBlog(form);
+    setSaving(true);
+    try {
+      if (editingId) {
+        await api.updateBlog(editingId, form);
+      } else {
+        await api.createBlog(form);
+      }
+      setForm(emptyBlog);
+      setImageMode('url');
+      setEditingId(null);
+      setShowForm(false);
+      loadBlogs();
+    } catch (err) {
+      alert(err.message || 'Save failed');
+    } finally {
+      setSaving(false);
     }
-    setForm(emptyBlog);
-    setImageMode('url');
-    setEditingId(null);
-    setShowForm(false);
-    loadBlogs();
   };
 
   const handleCancel = () => {
@@ -123,15 +145,44 @@ function BlogManager() {
           <form onSubmit={handleSubmit}>
             <div className="admin-form-group">
               <label>Title *</label>
-              <input name="title" value={form.title} onChange={handleChange} required />
+              <input name="title" value={form.title} onChange={handleChange} required disabled={saving} />
             </div>
             <div className="admin-form-group">
               <label>Excerpt</label>
-              <textarea name="excerpt" value={form.excerpt} onChange={handleChange} rows={2} />
+              <textarea name="excerpt" value={form.excerpt} onChange={handleChange} rows={2} disabled={saving} />
             </div>
             <div className="admin-form-group">
               <label>Content *</label>
-              <textarea name="content" value={form.content} onChange={handleChange} required rows={6} />
+              <textarea
+                name="content"
+                value={form.content}
+                onChange={handleChange}
+                required
+                rows={10}
+                disabled={saving}
+              />
+              <small className="text-muted d-block mt-1">{MARKDOWN_HINT}</small>
+            </div>
+            <div className="admin-form-group">
+              <label>Meta Title (SEO)</label>
+              <input
+                name="metaTitle"
+                value={form.metaTitle}
+                onChange={handleChange}
+                placeholder="Optional — browser/search title (can include | My India Service)"
+                disabled={saving}
+              />
+            </div>
+            <div className="admin-form-group">
+              <label>Meta Description (SEO)</label>
+              <textarea
+                name="metaDescription"
+                value={form.metaDescription}
+                onChange={handleChange}
+                rows={2}
+                placeholder="Optional — ~150–160 characters for search snippets"
+                disabled={saving}
+              />
             </div>
 
             <div className="admin-form-group">
@@ -141,6 +192,7 @@ function BlogManager() {
                   type="button"
                   className={`image-mode-btn ${imageMode === 'url' ? 'active' : ''}`}
                   onClick={() => setImageMode('url')}
+                  disabled={saving}
                 >
                   Image URL
                 </button>
@@ -148,6 +200,7 @@ function BlogManager() {
                   type="button"
                   className={`image-mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
                   onClick={() => setImageMode('upload')}
+                  disabled={saving}
                 >
                   Upload Image
                 </button>
@@ -160,10 +213,11 @@ function BlogManager() {
                   onChange={handleChange}
                   placeholder="https://..."
                   className="mt-2"
+                  disabled={saving}
                 />
               ) : (
                 <div className="mt-2">
-                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading} />
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading || saving} />
                   <small className="text-muted d-block mt-1">JPG, PNG, WebP — max 5MB</small>
                   {uploadLoading && <p className="text-muted mt-1 mb-0">Uploading...</p>}
                 </div>
@@ -178,18 +232,33 @@ function BlogManager() {
 
             <div className="admin-form-group">
               <label>Author</label>
-              <input name="author" value={form.author} onChange={handleChange} />
+              <input name="author" value={form.author} onChange={handleChange} disabled={saving} />
             </div>
 
             <label className="admin-checkbox">
-              <input type="checkbox" name="published" checked={form.published} onChange={handleChange} />
+              <input
+                type="checkbox"
+                name="published"
+                checked={form.published}
+                onChange={handleChange}
+                disabled={saving}
+              />
               Publish on website
             </label>
             <div className="admin-actions">
-              <button type="submit" className="admin-btn admin-btn-success">
-                {editingId ? 'Update' : 'Create'}
+              <button type="submit" className="admin-btn admin-btn-success" disabled={saving || uploadLoading}>
+                {saving ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin me-2"></i>
+                    Saving...
+                  </>
+                ) : editingId ? (
+                  'Update'
+                ) : (
+                  'Create'
+                )}
               </button>
-              <button type="button" className="admin-btn admin-btn-secondary" onClick={handleCancel}>
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={handleCancel} disabled={saving}>
                 Cancel
               </button>
             </div>

@@ -59,8 +59,11 @@ const upsertCanonical = (html, href) => {
 };
 
 const injectBlogMeta = (html, blog, siteUrl) => {
-  const title = `${blog.title} | ${SITE_NAME}`;
-  const description = truncate(blog.excerpt || blog.content) || DEFAULT_DESCRIPTION;
+  const title = blog.metaTitle
+    ? blog.metaTitle
+    : `${blog.title} | ${SITE_NAME}`;
+  const description =
+    truncate(blog.metaDescription || blog.excerpt || blog.content) || DEFAULT_DESCRIPTION;
   const canonical = `${siteUrl}/blogs/${blog.slug}`;
   const image = absoluteUrl(siteUrl, blog.image || DEFAULT_IMAGE_PATH);
 

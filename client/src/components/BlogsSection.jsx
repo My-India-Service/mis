@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { plainTextFromMarkdown } from './MarkdownContent';
 import '../pages/blogs-events.css';
 
 function BlogsSection() {
@@ -35,7 +36,7 @@ function BlogsSection() {
               )}
               <div className="be-card-body">
                 <h3>{blog.title}</h3>
-                <p>{blog.excerpt || blog.content.slice(0, 100) + '...'}</p>
+                <p>{blog.excerpt || plainTextFromMarkdown(blog.content, 100)}</p>
                 <div className="be-meta">{new Date(blog.createdAt).toLocaleDateString()}</div>
               </div>
             </Link>

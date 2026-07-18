@@ -11,6 +11,9 @@ const emptyEvent = {
   published: false,
 };
 
+const MARKDOWN_HINT =
+  'Supports Markdown: blank lines for paragraphs, * or - for bullets, **bold**, [text](https://url). Paste from Gemini as Markdown.';
+
 function getImageMode(image) {
   if (!image) return 'url';
   if (isUploadedImage(image)) return 'upload';
@@ -23,6 +26,7 @@ function EventManager() {
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [imageMode, setImageMode] = useState('url');
 
@@ -89,16 +93,23 @@ function EventManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) {
-      await api.updateEvent(editingId, form);
-    } else {
-      await api.createEvent(form);
+    setSaving(true);
+    try {
+      if (editingId) {
+        await api.updateEvent(editingId, form);
+      } else {
+        await api.createEvent(form);
+      }
+      setForm(emptyEvent);
+      setImageMode('url');
+      setEditingId(null);
+      setShowForm(false);
+      loadEvents();
+    } catch (err) {
+      alert(err.message || 'Save failed');
+    } finally {
+      setSaving(false);
     }
-    setForm(emptyEvent);
-    setImageMode('url');
-    setEditingId(null);
-    setShowForm(false);
-    loadEvents();
   };
 
   const handleCancel = () => {
@@ -130,20 +141,41 @@ function EventManager() {
           <form onSubmit={handleSubmit}>
             <div className="admin-form-group">
               <label>Title *</label>
-              <input name="title" value={form.title} onChange={handleChange} required />
+              <input name="title" value={form.title} onChange={handleChange} required disabled={saving} />
             </div>
             <div className="admin-form-group">
               <label>Description *</label>
-              <textarea name="description" value={form.description} onChange={handleChange} required rows={4} />
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                required
+                rows={10}
+                disabled={saving}
+              />
+              <small className="text-muted d-block mt-1">{MARKDOWN_HINT}</small>
             </div>
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Event Date *</label>
-                <input type="datetime-local" name="eventDate" value={form.eventDate} onChange={handleChange} required />
+                <input
+                  type="datetime-local"
+                  name="eventDate"
+                  value={form.eventDate}
+                  onChange={handleChange}
+                  required
+                  disabled={saving}
+                />
               </div>
               <div className="admin-form-group">
                 <label>Location</label>
-                <input name="location" value={form.location} onChange={handleChange} placeholder="Delhi, India" />
+                <input
+                  name="location"
+                  value={form.location}
+                  onChange={handleChange}
+                  placeholder="Delhi, India"
+                  disabled={saving}
+                />
               </div>
             </div>
 
@@ -154,6 +186,7 @@ function EventManager() {
                   type="button"
                   className={`image-mode-btn ${imageMode === 'url' ? 'active' : ''}`}
                   onClick={() => setImageMode('url')}
+                  disabled={saving}
                 >
                   Image URL
                 </button>
@@ -161,6 +194,7 @@ function EventManager() {
                   type="button"
                   className={`image-mode-btn ${imageMode === 'upload' ? 'active' : ''}`}
                   onClick={() => setImageMode('upload')}
+                  disabled={saving}
                 >
                   Upload Image
                 </button>
@@ -173,10 +207,11 @@ function EventManager() {
                   onChange={handleChange}
                   placeholder="https://..."
                   className="mt-2"
+                  disabled={saving}
                 />
               ) : (
                 <div className="mt-2">
-                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading} />
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadLoading || saving} />
                   <small className="text-muted d-block mt-1">JPG, PNG, WebP — max 5MB</small>
                   {uploadLoading && <p className="text-muted mt-1 mb-0">Uploading...</p>}
                 </div>
@@ -190,14 +225,29 @@ function EventManager() {
             </div>
 
             <label className="admin-checkbox">
-              <input type="checkbox" name="published" checked={form.published} onChange={handleChange} />
+              <input
+                type="checkbox"
+                name="published"
+                checked={form.published}
+                onChange={handleChange}
+                disabled={saving}
+              />
               Publish on website
             </label>
             <div className="admin-actions">
-              <button type="submit" className="admin-btn admin-btn-success">
-                {editingId ? 'Update' : 'Create'}
+              <button type="submit" className="admin-btn admin-btn-success" disabled={saving || uploadLoading}>
+                {saving ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin me-2"></i>
+                    Saving...
+                  </>
+                ) : editingId ? (
+                  'Update'
+                ) : (
+                  'Create'
+                )}
               </button>
-              <button type="button" className="admin-btn admin-btn-secondary" onClick={handleCancel}>
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={handleCancel} disabled={saving}>
                 Cancel
               </button>
             </div>

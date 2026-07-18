@@ -3,16 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Seo from '../components/Seo';
+import MarkdownContent, { plainTextFromMarkdown } from '../components/MarkdownContent';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
-
-function truncate(text, max = 160) {
-  if (!text) return '';
-  const clean = String(text).replace(/\s+/g, ' ').trim();
-  if (clean.length <= max) return clean;
-  return `${clean.slice(0, max - 1).trim()}…`;
-}
 
 function BlogDetail() {
   const { slug } = useParams();
@@ -33,16 +27,19 @@ function BlogDetail() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  const description = blog
-    ? truncate(blog.excerpt || blog.content)
+  const seoDescription = blog
+    ? blog.metaDescription ||
+      plainTextFromMarkdown(blog.excerpt || blog.content, 160) ||
+      'Blog post from My India Service.'
     : 'Blog post from My India Service.';
 
   return (
     <div className="blogs-events-page">
       {blog ? (
         <Seo
-          title={blog.title}
-          description={description}
+          title={blog.metaTitle || blog.title}
+          appendSiteName={!blog.metaTitle}
+          description={seoDescription}
           path={`/blogs/${blog.slug}`}
           image={blog.image || undefined}
           type="article"
@@ -75,7 +72,7 @@ function BlogDetail() {
               <div className="be-meta" style={{ marginBottom: '24px' }}>
                 By {blog.author} &middot; {new Date(blog.createdAt).toLocaleDateString()}
               </div>
-              <div className="be-detail-content">{blog.content}</div>
+              <MarkdownContent className="be-detail-content">{blog.content}</MarkdownContent>
               <Link to="/blogs" className="btn btn-primary mt-4">
                 &larr; Back to Blogs
               </Link>

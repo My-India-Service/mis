@@ -23,8 +23,13 @@ function Seo({
   image = DEFAULT_IMAGE,
   type = 'website',
   noindex = false,
+  appendSiteName = true,
 }) {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+  const fullTitle = title
+    ? appendSiteName
+      ? `${title} | ${SITE_NAME}`
+      : title
+    : SITE_NAME;
   const canonical =
     path != null
       ? absoluteUrl(path)

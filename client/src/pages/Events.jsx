@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import Seo from '../components/Seo';
+import MarkdownContent from '../components/MarkdownContent';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
@@ -37,30 +38,26 @@ function Events() {
           ) : events.length === 0 ? (
             <p className="be-empty">No upcoming events. Check back soon!</p>
           ) : (
-            <div className="be-grid">
+            <div className="be-event-list">
               {events.map((event) => (
-                <div key={event._id} className="be-card" style={{ cursor: 'default' }}>
+                <article key={event._id} className="be-event-article">
                   {event.image ? (
-                    <img src={event.image} alt={event.title} className="be-card-img" loading="lazy" />
-                  ) : (
-                    <div className="be-card-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fas fa-calendar fa-3x" style={{ color: '#adb5bd' }}></i>
-                    </div>
-                  )}
-                  <div className="be-card-body">
+                    <img src={event.image} alt={event.title} className="be-event-article-img" loading="lazy" />
+                  ) : null}
+                  <div className="be-event-article-body">
                     <div className="be-event-date">
                       <i className="fas fa-calendar-alt"></i>
                       {new Date(event.eventDate).toLocaleString()}
                     </div>
                     <h2>{event.title}</h2>
-                    <p>{event.description}</p>
-                    {event.location && (
-                      <div className="be-meta">
+                    {event.location ? (
+                      <div className="be-meta" style={{ marginBottom: '16px' }}>
                         <i className="fas fa-map-marker-alt"></i> {event.location}
                       </div>
-                    )}
+                    ) : null}
+                    <MarkdownContent>{event.description}</MarkdownContent>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}

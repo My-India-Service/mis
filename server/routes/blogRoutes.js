@@ -31,7 +31,7 @@ router.get('/:slug', async (req, res) => {
 
 router.post('/', auth, requirePermission('manage_blogs'), async (req, res) => {
   try {
-    const { title, excerpt, content, image, author, published } = req.body;
+    const { title, excerpt, content, image, author, published, metaTitle, metaDescription } = req.body;
     if (!title || !content) {
       return res.status(400).json({ success: false, message: 'Title and content required' });
     }
@@ -45,6 +45,8 @@ router.post('/', auth, requirePermission('manage_blogs'), async (req, res) => {
       slug,
       excerpt: excerpt || '',
       content,
+      metaTitle: metaTitle || '',
+      metaDescription: metaDescription || '',
       image: image || '',
       author: author || 'My India Service',
       published: published ?? false,
@@ -58,7 +60,7 @@ router.post('/', auth, requirePermission('manage_blogs'), async (req, res) => {
 
 router.put('/:id', auth, requirePermission('manage_blogs'), async (req, res) => {
   try {
-    const { title, excerpt, content, image, author, published } = req.body;
+    const { title, excerpt, content, image, author, published, metaTitle, metaDescription } = req.body;
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
 
@@ -74,6 +76,8 @@ router.put('/:id', auth, requirePermission('manage_blogs'), async (req, res) => 
     }
     if (excerpt !== undefined) blog.excerpt = excerpt;
     if (content !== undefined) blog.content = content;
+    if (metaTitle !== undefined) blog.metaTitle = metaTitle;
+    if (metaDescription !== undefined) blog.metaDescription = metaDescription;
     if (image !== undefined) blog.image = image;
     if (author !== undefined) blog.author = author;
     if (published !== undefined) blog.published = published;
