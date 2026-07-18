@@ -20,7 +20,7 @@ Browser ──► myindiaservice.com ──► cPanel Node.js App
 `server/index.js` serves the pre-built React app from `../client/dist` and the API on the same origin. The frontend calls the API using the relative path `/api`, so no API URL configuration is needed.
 
 ## Important CloudLinux cPanel constraints (read first)
-
+Note: activiating node env: [wwwmyind@s1334 ~]$ source ~/nodevenv/mis/20/bin/activate
 This host (CloudLinux Node.js Selector) behaves differently from a normal server. These two facts drive the whole deployment:
 
 1. **npm installs only from the app-root `package.json` into a virtualenv.**
@@ -103,14 +103,14 @@ Add these in the Node.js app panel:
 
 In the Node.js app panel click **Run NPM Install**. Because the root [`package.json`](package.json) lists the runtime dependencies, this installs `express`, `mongoose`, etc. into the virtualenv.
 
-Verify in Terminal (activate the venv command shown in the panel first):
+Verify in Terminal (activate the venv command shown in the panel first). **Venv activation is per terminal session** — closing Terminal drops it, so you must activate again every time you reopen Terminal before `node` / `npm` work:
 
 ```bash
 cd ~/mis
 node -e "require('express'); require('mongoose'); console.log('deps OK')"
 ```
 
-You should see `deps OK`. If not, see Troubleshooting.
+You should see `deps OK`. A working session’s prompt includes the app prefix (e.g. `[mis (20)]`). If not, see Troubleshooting.
 
 ## Step 7: Restart and test
 
@@ -135,6 +135,7 @@ git pull
 
 | Problem | Fix |
 |---------|-----|
+| `bash: node: command not found` after reopening Terminal | Activate the Node.js app virtualenv every new session (panel “Enter to the virtual environment” command, or `source ~/nodevenv/mis/20/bin/activate`). Confirm the prompt shows `[mis (20)]`. Adjust `20` if the app uses Node 18. The live site can still run via Passenger even when Terminal has no Node. |
 | 503 / `Error: Cannot find module 'express'` | Runtime deps missing. Ensure root [`package.json`](package.json) lists them, then **Run NPM Install** + **Restart**. Quick check: `node -e "require('express')"` |
 | `npm install` says "audited 2 packages" | The dependency is not in the **app-root** `package.json`. On this host npm only installs from the app root, not from `server/` |
 | `sh: vite: command not found` | Do not build on the server (`omit=dev` blocks vite). Build `client/dist` locally and commit it (Step 2) |
@@ -142,7 +143,54 @@ git pull
 | Blank page but `/api/health` works | `client/dist` missing on server — rebuild locally and commit, then `git pull` |
 | CORS error | Set `CLIENT_URL` to the exact live URL including `https://` |
 | MongoDB connection failed | Check Atlas IP allowlist and `MONGODB_URI` |
+| Site data / admin login does not match panel Atlas or `ADMIN_PASSWORD` | Wrong DB name in URI (often missing `/mis` → DB `test`), or Terminal using a different env than Passenger. See **Verify active MongoDB / env** below. Changing panel `ADMIN_PASSWORD` does not update an existing admin — use `node server/utils/resetAdminPassword.js "NewPassword"` against the live DB. |
 | Old PHP site still showing | Domain must map to the Node.js app, not `public_html` |
+
+### `node: command not found` (new Terminal session)
+
+CloudLinux does not put Node on PATH for a bare shell. After opening Terminal:
+
+1. cPanel → **Setup Node.js App** → your `mis` app → copy **Enter to the virtual environment** (or run `source ~/nodevenv/mis/20/bin/activate`).
+2. `cd ~/mis` then `node -v` / `npm -v` — versions should print and the prompt should show `[mis (20)]`.
+
+Env vars for one-off `node` scripts may still be empty in that shell (they live in the Node.js App panel for Passenger). Export `MONGODB_URI=...` inline, or use a `.env` under `~/mis` if you keep one there.
+
+### Verify active MongoDB / env
+
+The live site (Passenger) gets env from **Setup Node.js App**. Terminal does **not** inherit those vars automatically — after activating the venv, one-off scripts only see shell exports plus `~/mis/.env` if present (`dotenv` does not override panel vars already set in Passenger). App root is `~/mis`, so dotenv looks for `~/mis/.env`, not `server/.env`.
+
+1. Activate venv and `cd ~/mis` (prompt must show `[mis (20)]`). Pull latest code first so these scripts exist: `git pull`.
+
+2. Print what this shell sees (password masked):
+
+```bash
+node server/utils/printMongoEnv.js
+```
+
+3. Connect and print the **actual DB name + counts** (the data this process would hit):
+
+```bash
+node server/utils/checkMongoDb.js
+```
+
+4. Compare with the panel: **Setup Node.js App** → `mis` → Environment variables → `MONGODB_URI`.
+
+- Good: `...mongodb.net/mis?...` (database name `mis`)
+- Bad / common mismatch: `...mongodb.net/?appName=...` (no DB name → often database `test`)
+
+If Terminal shows DB `test` (or empty collections) while Atlas shows data under `mis`, fix the panel URI to include `/mis`, then **Restart**.
+
+5. If step 2 says `MONGODB_URI` is missing but the site works: panel has the var for Passenger only. Export the **real** URI from the panel (do not use placeholder text like `paste-from-panel-here`), then re-run step 3:
+
+```bash
+export MONGODB_URI='mongodb+srv://user:pass@cluster.mongodb.net/mis?...'
+```
+
+Or put the same URI in `~/mis/.env` for Terminal scripts. After confirming the live DB name, reset admin against that DB:
+
+```bash
+node server/utils/resetAdminPassword.js "YourNewStrongPassword"
+```
 
 ## Notes
 
