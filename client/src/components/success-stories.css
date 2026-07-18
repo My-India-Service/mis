@@ -329,11 +329,21 @@
   opacity: 1;
   text-indent: -9999px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .success-carousel-indicators button.active {
   width: 32px;
   background: var(--accent);
+}
+
+/* React-controlled carousel: only the active slide is shown */
+.success-carousel-v2 .carousel-item {
+  display: none;
+}
+
+.success-carousel-v2 .carousel-item.active {
+  display: block;
 }
 
 .success-carousel-control {

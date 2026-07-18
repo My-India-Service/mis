@@ -19,10 +19,16 @@
   background: radial-gradient(circle at 20% 50%, rgba(63, 136, 110, 0.2) 0%, transparent 50%);
 }
 
-.be-hero h1 {
+.be-hero h1,
+.be-hero .be-hero-label {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
   position: relative;
+  margin: 0;
+}
+
+.be-hero .be-hero-label {
+  color: #fff;
 }
 
 .be-hero p {
@@ -70,6 +76,7 @@
   padding: 24px;
 }
 
+.be-card-body h2,
 .be-card-body h3 {
   font-size: 1.15rem;
   color: #0a142a;

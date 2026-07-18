@@ -14,6 +14,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const sitemapRoutes = require('./routes/sitemapRoutes');
 const userRoutes = require('./routes/userRoutes');
 const seedSuccessStories = require('./utils/seedSuccessStories');
+const { createBlogSeoMiddleware } = require('./middleware/blogSeo');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,6 +54,7 @@ app.use('/api/users', userRoutes);
 app.use('/', sitemapRoutes);
 
 const clientDist = path.join(__dirname, '../client/dist');
+app.use(createBlogSeoMiddleware(clientDist));
 app.use(express.static(clientDist));
 app.use((req, res, next) => {
   if (req.method !== 'GET' || req.path.startsWith('/api')) return next();

@@ -2,9 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import Seo from '../components/Seo';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
+
+function truncate(text, max = 160) {
+  if (!text) return '';
+  const clean = String(text).replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max - 1).trim()}…`;
+}
 
 function BlogDetail() {
   const { slug } = useParams();
@@ -13,18 +21,43 @@ function BlogDetail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setLoading(true);
+    setError('');
     api
       .getBlog(slug)
       .then((res) => setBlog(res.data))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setBlog(null);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, [slug]);
 
+  const description = blog
+    ? truncate(blog.excerpt || blog.content)
+    : 'Blog post from My India Service.';
+
   return (
     <div className="blogs-events-page">
+      {blog ? (
+        <Seo
+          title={blog.title}
+          description={description}
+          path={`/blogs/${blog.slug}`}
+          image={blog.image || undefined}
+          type="article"
+        />
+      ) : (
+        <Seo
+          title={error || !loading ? 'Blog not found' : 'Blog'}
+          description="Blog post from My India Service."
+          path={`/blogs/${slug}`}
+          noindex={Boolean(error || (!loading && !blog))}
+        />
+      )}
       <Navbar />
       <div className="be-hero">
-        <h1>Blog</h1>
+        <p className="be-hero-label">Blog</p>
       </div>
       <section className="be-section">
         <div className="container">

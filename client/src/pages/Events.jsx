@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import Seo from '../components/Seo';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
@@ -19,6 +20,11 @@ function Events() {
 
   return (
     <div className="blogs-events-page">
+      <Seo
+        title="Events"
+        description="Upcoming events and activities from My India Service."
+        path="/events"
+      />
       <Navbar />
       <div className="be-hero">
         <h1>Events</h1>
@@ -35,7 +41,7 @@ function Events() {
               {events.map((event) => (
                 <div key={event._id} className="be-card" style={{ cursor: 'default' }}>
                   {event.image ? (
-                    <img src={event.image} alt={event.title} className="be-card-img" />
+                    <img src={event.image} alt={event.title} className="be-card-img" loading="lazy" />
                   ) : (
                     <div className="be-card-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <i className="fas fa-calendar fa-3x" style={{ color: '#adb5bd' }}></i>
@@ -46,7 +52,7 @@ function Events() {
                       <i className="fas fa-calendar-alt"></i>
                       {new Date(event.eventDate).toLocaleString()}
                     </div>
-                    <h3>{event.title}</h3>
+                    <h2>{event.title}</h2>
                     <p>{event.description}</p>
                     {event.location && (
                       <div className="be-meta">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import Seo from '../components/Seo';
 import { api } from '../services/api';
 import './blogs-events.css';
 import './pageStyles.css';
@@ -20,6 +21,11 @@ function Blogs() {
 
   return (
     <div className="blogs-events-page">
+      <Seo
+        title="Blog"
+        description="Latest insights from My India Service — digital marketing, web development, and business growth."
+        path="/blogs"
+      />
       <Navbar />
       <div className="be-hero">
         <h1>Blog</h1>
@@ -36,14 +42,14 @@ function Blogs() {
               {blogs.map((blog) => (
                 <Link to={`/blogs/${blog.slug}`} key={blog._id} className="be-card">
                   {blog.image ? (
-                    <img src={blog.image} alt={blog.title} className="be-card-img" />
+                    <img src={blog.image} alt={blog.title} className="be-card-img" loading="lazy" />
                   ) : (
                     <div className="be-card-img" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <i className="fas fa-newspaper fa-3x" style={{ color: '#adb5bd' }}></i>
                     </div>
                   )}
                   <div className="be-card-body">
-                    <h3>{blog.title}</h3>
+                    <h2>{blog.title}</h2>
                     <p>{blog.excerpt || blog.content.slice(0, 120) + '...'}</p>
                     <div className="be-meta">
                       {blog.author} &middot; {new Date(blog.createdAt).toLocaleDateString()}

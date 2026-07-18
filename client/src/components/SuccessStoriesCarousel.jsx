@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { getDisplayImage } from '../utils/imageUrl';
 import './success-stories.css';
+
+const AUTOPLAY_MS = 5500;
 
 function StoryImage({ story }) {
   const img = (
@@ -9,6 +11,7 @@ function StoryImage({ story }) {
       src={getDisplayImage(story.previewImage)}
       className="success-story-img"
       alt={story.title}
+      loading="lazy"
       onError={(e) => {
         e.currentTarget.src =
           'data:image/svg+xml,' +
@@ -55,14 +58,54 @@ function StoryBlock({ icon, label, text, variant }) {
 function SuccessStoriesCarousel() {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchStartX = useRef(null);
 
   useEffect(() => {
     api
       .getSuccessStories()
-      .then((res) => setStories(res.data))
+      .then((res) => setStories(res.data || []))
       .catch(() => setStories([]))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [stories.length]);
+
+  const goTo = useCallback(
+    (index) => {
+      if (stories.length === 0) return;
+      const next = ((index % stories.length) + stories.length) % stories.length;
+      setActiveIndex(next);
+    },
+    [stories.length]
+  );
+
+  const goNext = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
+  const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
+
+  useEffect(() => {
+    if (stories.length < 2 || paused) return undefined;
+    const id = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % stories.length);
+    }, AUTOPLAY_MS);
+    return () => clearInterval(id);
+  }, [stories.length, paused]);
+
+  const onTouchStart = (e) => {
+    touchStartX.current = e.changedTouches[0]?.clientX ?? null;
+  };
+
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null || stories.length < 2) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 40) return;
+    if (delta < 0) goNext();
+    else goPrev();
+  };
 
   if (loading) {
     return (
@@ -93,19 +136,23 @@ function SuccessStoriesCarousel() {
         <div
           id="successStoriesCarousel"
           className="carousel slide carousel-fade success-carousel-v2"
-          data-bs-ride="carousel"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          aria-roledescription="carousel"
+          aria-label="Client success stories"
         >
           {stories.length > 1 && (
-            <div className="success-carousel-indicators">
+            <div className="success-carousel-indicators" role="tablist">
               {stories.map((story, index) => (
                 <button
                   key={story._id}
                   type="button"
-                  data-bs-target="#successStoriesCarousel"
-                  data-bs-slide-to={index}
-                  className={index === 0 ? 'active' : ''}
-                  aria-current={index === 0 ? 'true' : undefined}
+                  className={index === activeIndex ? 'active' : ''}
+                  aria-current={index === activeIndex ? 'true' : undefined}
                   aria-label={`Story ${index + 1}: ${story.title}`}
+                  onClick={() => goTo(index)}
                 />
               ))}
             </div>
@@ -113,7 +160,11 @@ function SuccessStoriesCarousel() {
 
           <div className="carousel-inner">
             {stories.map((story, index) => (
-              <div key={story._id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+              <div
+                key={story._id}
+                className={`carousel-item ${index === activeIndex ? 'active' : ''}`}
+                aria-hidden={index !== activeIndex}
+              >
                 <article className="success-story-card">
                   <div className="success-story-media">
                     {story.previewImage ? (
@@ -126,7 +177,8 @@ function SuccessStoriesCarousel() {
                     )}
                     {stories.length > 1 && (
                       <span className="success-story-slide-count">
-                        {String(index + 1).padStart(2, '0')} / {String(stories.length).padStart(2, '0')}
+                        {String(activeIndex + 1).padStart(2, '0')} /{' '}
+                        {String(stories.length).padStart(2, '0')}
                       </span>
                     )}
                   </div>
@@ -168,18 +220,16 @@ function SuccessStoriesCarousel() {
               <button
                 className="success-carousel-control success-carousel-control-prev"
                 type="button"
-                data-bs-target="#successStoriesCarousel"
-                data-bs-slide="prev"
                 aria-label="Previous story"
+                onClick={goPrev}
               >
                 <i className="fas fa-chevron-left"></i>
               </button>
               <button
                 className="success-carousel-control success-carousel-control-next"
                 type="button"
-                data-bs-target="#successStoriesCarousel"
-                data-bs-slide="next"
                 aria-label="Next story"
+                onClick={goNext}
               >
                 <i className="fas fa-chevron-right"></i>
               </button>
