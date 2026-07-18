@@ -12,6 +12,7 @@ const successStoryRoutes = require('./routes/successStoryRoutes');
 const imageProxyRoutes = require('./routes/imageProxyRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const sitemapRoutes = require('./routes/sitemapRoutes');
+const userRoutes = require('./routes/userRoutes');
 const seedSuccessStories = require('./utils/seedSuccessStories');
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/success-stories', successStoryRoutes);
 app.use('/api/image-proxy', imageProxyRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/users', userRoutes);
 
 // SEO: dynamic sitemap.xml (includes published blogs) + robots.txt.
 // Registered before static so the generated sitemap always wins.

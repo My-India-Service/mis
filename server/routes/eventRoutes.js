@@ -1,11 +1,12 @@
 const express = require('express');
 const Event = require('../models/Event');
 const auth = require('../middleware/auth');
+const { requirePermission, authWithPermission } = auth;
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-  if (req.query.admin === 'true') return auth(req, res, next);
+  if (req.query.admin === 'true') return authWithPermission('manage_events')(req, res, next);
   next();
 }, async (req, res) => {
   try {
@@ -27,7 +28,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requirePermission('manage_events'), async (req, res) => {
   try {
     const { title, description, image, eventDate, location, published } = req.body;
     if (!title || !description || !eventDate) {
@@ -49,7 +50,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requirePermission('manage_events'), async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
@@ -69,7 +70,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requirePermission('manage_events'), async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id);
     if (!event) return res.status(404).json({ success: false, message: 'Event not found' });

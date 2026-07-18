@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const auth = require('../middleware/auth');
+const { requirePermission } = auth;
 const { uploadImage, isConfigured } = require('../config/cloudinary');
 
 const router = express.Router();
@@ -61,11 +62,11 @@ const handleUpload = (req, res) => {
   });
 };
 
-router.post('/success-story-image', auth, (req, res) => {
+router.post('/success-story-image', auth, requirePermission('manage_uploads'), (req, res) => {
   req.params.type = 'success-stories';
   handleUpload(req, res);
 });
 
-router.post('/:type', auth, handleUpload);
+router.post('/:type', auth, requirePermission('manage_uploads'), handleUpload);
 
 module.exports = router;

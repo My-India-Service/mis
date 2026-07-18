@@ -98,4 +98,13 @@ export const api = {
   },
 
   uploadSuccessStoryImage: (file) => api.uploadImage(file, 'success-stories'),
+
+  getUsers: () => request('/users'),
+
+  createUser: (payload) => request('/users', { method: 'POST', body: JSON.stringify(payload) }),
+
+  updateUser: (id, payload) =>
+    request(`/users/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+
+  deleteUser: (id) => request(`/users/${id}`, { method: 'DELETE' }),
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const Contact = require('../models/Contact');
 const auth = require('../middleware/auth');
+const { requirePermission } = auth;
 
 const router = express.Router();
 
@@ -47,7 +48,7 @@ const buildEmailBody = (type, data) => {
   return body;
 };
 
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, requirePermission('manage_submissions'), async (req, res) => {
   try {
     const filter = {};
     if (req.query.formType) filter.formType = req.query.formType;
@@ -135,7 +136,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requirePermission('manage_submissions'), async (req, res) => {
   try {
     const submission = await Contact.findByIdAndDelete(req.params.id);
     if (!submission) {

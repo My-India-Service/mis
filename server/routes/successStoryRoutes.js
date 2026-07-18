@@ -1,12 +1,13 @@
 const express = require('express');
 const SuccessStory = require('../models/SuccessStory');
 const auth = require('../middleware/auth');
+const { requirePermission, authWithPermission } = auth;
 const { fetchLinkPreview } = require('../utils/linkPreview');
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-  if (req.query.admin === 'true') return auth(req, res, next);
+  if (req.query.admin === 'true') return authWithPermission('manage_stories')(req, res, next);
   next();
 }, async (req, res) => {
   try {
@@ -18,7 +19,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.post('/preview', auth, async (req, res) => {
+router.post('/preview', auth, requirePermission('manage_stories'), async (req, res) => {
   try {
     const { url } = req.body;
     if (!url) {
@@ -31,7 +32,7 @@ router.post('/preview', auth, async (req, res) => {
   }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requirePermission('manage_stories'), async (req, res) => {
   try {
     const { title, challenge, solution, benefits, websiteUrl, previewImage, logoImage, published, order } =
       req.body;
@@ -67,7 +68,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requirePermission('manage_stories'), async (req, res) => {
   try {
     const story = await SuccessStory.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: 'Story not found' });
@@ -100,7 +101,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requirePermission('manage_stories'), async (req, res) => {
   try {
     const story = await SuccessStory.findByIdAndDelete(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: 'Story not found' });

@@ -5,6 +5,20 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+const signToken = (admin) => {
+  const permissions = admin.getPermissions();
+  return jwt.sign(
+    {
+      id: admin._id.toString(),
+      email: admin.email,
+      name: admin.name,
+      permissions,
+    },
+    process.env.JWT_SECRET || 'mis-secret-key',
+    { expiresIn: '7d' }
+  );
+};
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -17,16 +31,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { id: admin._id.toString(), email: admin.email },
-      process.env.JWT_SECRET || 'mis-secret-key',
-      { expiresIn: '7d' }
-    );
+    const safe = admin.toSafeJSON();
+    const token = signToken(admin);
 
     res.json({
       success: true,
       token,
-      admin: { id: admin._id.toString(), email: admin.email, name: admin.name },
+      admin: safe,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -36,13 +47,13 @@ router.post('/login', async (req, res) => {
 router.get('/me', auth, async (req, res) => {
   try {
     const adminId = req.admin.id || req.admin._id;
-    const admin = await Admin.findById(adminId).select('-password');
+    const admin = await Admin.findById(adminId);
     if (!admin) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
     res.json({
       success: true,
-      admin: { id: admin._id, email: admin.email, name: admin.name },
+      admin: admin.toSafeJSON(),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

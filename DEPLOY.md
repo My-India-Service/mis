@@ -95,7 +95,7 @@ Add these in the Node.js app panel:
 | `CLIENT_URL` | Yes | `https://myindiaservice.com` |
 | `JWT_SECRET` | Yes | a long random string |
 | `ADMIN_EMAIL` | Yes | `admin@myindiaservice.com` |
-| `ADMIN_PASSWORD` | Yes | a strong password |
+| `ADMIN_PASSWORD` | Yes | a strong password (synced into Mongo on every app start via `seedAdmin`) |
 | `EMAIL_TO` / `EMAIL_FROM` | No | contact form recipient/sender |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | No | contact form email |
 
@@ -131,6 +131,12 @@ git pull
 - If server dependencies changed: update the `dependencies` in the root [`package.json`](package.json) to match [`server/package.json`](server/package.json), commit, pull, then click **Run NPM Install**.
 - Click **Restart**.
 
+### Admin users & permissions
+
+Dashboard users have a per-user permission matrix (`manage_blogs`, `manage_events`, `manage_stories`, `manage_submissions`, `manage_users`, `manage_uploads`). Anyone with `manage_users` can add/edit users from the **Users** tab.
+
+After deploying this feature: rebuild/commit `client/dist`, `git pull` on the server, then **Restart**. `seedAdmin` grants **all** permissions to the `ADMIN_EMAIL` account. Other existing admins default to no permissions until a full-access user grants them (or you set flags in Atlas).
+
 ## Troubleshooting
 
 | Problem | Fix |
@@ -143,7 +149,9 @@ git pull
 | Blank page but `/api/health` works | `client/dist` missing on server — rebuild locally and commit, then `git pull` |
 | CORS error | Set `CLIENT_URL` to the exact live URL including `https://` |
 | MongoDB connection failed | Check Atlas IP allowlist and `MONGODB_URI` |
-| Site data / admin login does not match panel Atlas or `ADMIN_PASSWORD` | Wrong DB name in URI (often missing `/mis` → DB `test`), or Terminal using a different env than Passenger. See **Verify active MongoDB / env** below. Changing panel `ADMIN_PASSWORD` does not update an existing admin — use `node server/utils/resetAdminPassword.js "NewPassword"` against the live DB. |
+| Site data / admin login does not match panel Atlas or `ADMIN_PASSWORD` | Wrong DB name in URI (often missing `/mis` → DB `test`), or Terminal using a different env than Passenger. See **Verify active MongoDB / env** below. |
+| Admin login `Invalid credentials` despite panel `ADMIN_PASSWORD` | Panel env is not checked at login — the password is stored hashed in Mongo. After this deploy, `seedAdmin` syncs panel `ADMIN_EMAIL` / `ADMIN_PASSWORD` into Mongo on every app **Restart**. Pull latest code, then Restart. Immediate workaround (venv on, URI with `/mis`): `node server/utils/resetAdminPassword.js 'YourPanelPassword'` (case-sensitive). |
+| Dashboard tabs missing / “no dashboard permissions” after deploy | Existing users default to no caps. Restart so `seedAdmin` restores full access for `ADMIN_EMAIL`, then use **Users** to grant other accounts. |
 | Old PHP site still showing | Domain must map to the Node.js app, not `public_html` |
 
 ### `node: command not found` (new Terminal session)
@@ -178,19 +186,35 @@ node server/utils/checkMongoDb.js
 - Good: `...mongodb.net/mis?...` (database name `mis`)
 - Bad / common mismatch: `...mongodb.net/?appName=...` (no DB name → often database `test`)
 
-If Terminal shows DB `test` (or empty collections) while Atlas shows data under `mis`, fix the panel URI to include `/mis`, then **Restart**.
+### Switch from DB `test` to DB `mis`
 
-5. If step 2 says `MONGODB_URI` is missing but the site works: panel has the var for Passenger only. Export the **real** URI from the panel (do not use placeholder text like `paste-from-panel-here`), then re-run step 3:
+If `checkMongoDb.js` prints `db name: test`, the URI is missing the database name. Same cluster, wrong database.
+
+1. Change the URI from  
+   `...mongodb.net/?appName=Cluster0`  
+   to  
+   `...mongodb.net/mis?appName=Cluster0`  
+   (insert `/mis` immediately before `?`; keep the same user, password, and host).
+
+2. **Live site:** cPanel → **Setup Node.js App** → Environment variables → set `MONGODB_URI` to the value with `/mis` → **Save** / **Restart**.
+
+3. **Terminal (this session):**
 
 ```bash
-export MONGODB_URI='mongodb+srv://user:pass@cluster.mongodb.net/mis?...'
+export MONGODB_URI='mongodb+srv://USER:PASS@cluster.mongodb.net/mis?appName=Cluster0'
+node server/utils/printMongoEnv.js
+node server/utils/checkMongoDb.js
 ```
 
-Or put the same URI in `~/mis/.env` for Terminal scripts. After confirming the live DB name, reset admin against that DB:
+Confirm `db name: mis`. Optional: put the same line in `~/mis/.env` for future CLI runs (do not commit `.env`).
+
+4. Admin on `mis` may differ from `test`. After the switch:
 
 ```bash
 node server/utils/resetAdminPassword.js "YourNewStrongPassword"
 ```
+
+5. If `printMongoEnv.js` says `MONGODB_URI` is missing but the site works: panel has the var for Passenger only. Export the **real** URI from the panel (with `/mis`, not placeholder text), then re-run `checkMongoDb.js`. Or put the same URI in `~/mis/.env` for Terminal scripts.
 
 ## Notes
 

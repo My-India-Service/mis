@@ -1,7 +1,16 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { api } from '../services/api';
 
 const AuthContext = createContext(null);
+
+const EMPTY_PERMISSIONS = {
+  manage_blogs: false,
+  manage_events: false,
+  manage_stories: false,
+  manage_submissions: false,
+  manage_users: false,
+  manage_uploads: false,
+};
 
 function readStoredToken() {
   try {
@@ -20,10 +29,21 @@ function adminFromToken(token) {
       id: payload.id || payload._id,
       email: payload.email || '',
       name: payload.name || '',
+      permissions: { ...EMPTY_PERMISSIONS, ...(payload.permissions || {}) },
     };
   } catch {
     return null;
   }
+}
+
+function normalizeAdmin(user) {
+  if (!user) return null;
+  return {
+    id: user.id || user._id,
+    email: user.email,
+    name: user.name,
+    permissions: { ...EMPTY_PERMISSIONS, ...(user.permissions || {}) },
+  };
 }
 
 export function AuthProvider({ children }) {
@@ -33,7 +53,6 @@ export function AuthProvider({ children }) {
   });
   const [loading, setLoading] = useState(() => {
     const token = readStoredToken();
-    // Only block UI if we have a token but can't read it yet
     return Boolean(token && !adminFromToken(token));
   });
 
@@ -61,12 +80,7 @@ export function AuthProvider({ children }) {
       .getMe()
       .then((res) => {
         if (cancelled) return;
-        const user = res.admin;
-        setAdmin({
-          id: user.id || user._id,
-          email: user.email,
-          name: user.name,
-        });
+        setAdmin(normalizeAdmin(res.admin));
       })
       .catch((err) => {
         if (cancelled) return;
@@ -87,7 +101,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const res = await api.login(email, password);
     localStorage.setItem('adminToken', res.token);
-    setAdmin(res.admin);
+    setAdmin(normalizeAdmin(res.admin));
     return res;
   };
 
@@ -96,8 +110,15 @@ export function AuthProvider({ children }) {
     setAdmin(null);
   };
 
+  const can = useCallback(
+    (permission) => Boolean(admin?.permissions?.[permission]),
+    [admin]
+  );
+
   return (
-    <AuthContext.Provider value={{ admin, loading, login, logout, isAuthenticated: !!admin }}>
+    <AuthContext.Provider
+      value={{ admin, loading, login, logout, can, isAuthenticated: !!admin }}
+    >
       {children}
     </AuthContext.Provider>
   );

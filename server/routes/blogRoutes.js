@@ -1,12 +1,13 @@
 const express = require('express');
 const Blog = require('../models/Blog');
 const auth = require('../middleware/auth');
+const { requirePermission, authWithPermission } = auth;
 const slugify = require('../utils/slugify');
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
-  if (req.query.admin === 'true') return auth(req, res, next);
+  if (req.query.admin === 'true') return authWithPermission('manage_blogs')(req, res, next);
   next();
 }, async (req, res) => {
   try {
@@ -28,7 +29,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, requirePermission('manage_blogs'), async (req, res) => {
   try {
     const { title, excerpt, content, image, author, published } = req.body;
     if (!title || !content) {
@@ -55,7 +56,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, requirePermission('manage_blogs'), async (req, res) => {
   try {
     const { title, excerpt, content, image, author, published } = req.body;
     const blog = await Blog.findById(req.params.id);
@@ -84,7 +85,7 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth, requirePermission('manage_blogs'), async (req, res) => {
   try {
     const blog = await Blog.findByIdAndDelete(req.params.id);
     if (!blog) return res.status(404).json({ success: false, message: 'Blog not found' });
